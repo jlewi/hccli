@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/jlewi/hccli/cmd"
 	"os"
+
+	"github.com/jlewi/hccli/cmd"
 )
 
 func main() {

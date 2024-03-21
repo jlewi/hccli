@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/jlewi/hccli/pkg"
 	"github.com/jlewi/hccli/pkg/app"
 	"github.com/jlewi/hydros/pkg/util"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 // NewNLToQuery creates a command to generate queries

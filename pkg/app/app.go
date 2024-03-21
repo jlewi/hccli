@@ -2,13 +2,14 @@ package app
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"strings"
+
 	"github.com/jlewi/hccli/pkg/config"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"io"
-	"os"
-	"strings"
 )
 
 // App is a struct to hold values needed across all commands.

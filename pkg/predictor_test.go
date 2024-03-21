@@ -2,9 +2,10 @@ package pkg
 
 import (
 	"encoding/json"
-	"github.com/google/go-cmp/cmp"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func Test_Deserialize(t *testing.T) {

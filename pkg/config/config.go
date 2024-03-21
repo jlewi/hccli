@@ -2,17 +2,18 @@ package config
 
 import (
 	"fmt"
+	"io/fs"
+	"os"
+	"os/user"
+	"path/filepath"
+	"strings"
+
 	"github.com/go-logr/zapr"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
-	"io/fs"
-	"os"
-	"os/user"
-	"path/filepath"
-	"strings"
 )
 
 // N.B. We are currently using viper to manage configuration. viper takes care of merging configuration from different

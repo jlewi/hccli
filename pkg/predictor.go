@@ -3,14 +3,15 @@ package pkg
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/go-logr/zapr"
-	"github.com/jlewi/hccli/pkg/config"
-	"github.com/pkg/errors"
-	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/go-logr/zapr"
+	"github.com/jlewi/hccli/pkg/config"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 // Query represents a query.
@@ -51,6 +52,9 @@ func (p *Predictor) Predict(inQuery QueryInput) (*Query, error) {
 		Input: &inQuery,
 	}
 	b, err := json.Marshal(q)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to serialize query")
+	}
 	buff := bytes.NewBuffer(b)
 
 	endpoint := strings.TrimSuffix(p.Config.AIEndpoint, "/") + "/predictions"
