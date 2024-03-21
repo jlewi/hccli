@@ -20,6 +20,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolVarP(&jsonLog, "json-logs", "", false, "Enable json logging.")
 
 	rootCmd.AddCommand(NewConfigCmd())
+	rootCmd.AddCommand(NewNLToQuery())
 	rootCmd.AddCommand(NewVersionCmd("hccli", os.Stdout))
 	return rootCmd
 }

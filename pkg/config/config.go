@@ -22,7 +22,7 @@ import (
 const (
 	ConfigFlagName = "config"
 	LevelFlagName  = "level"
-	LogDirFlagName = "log-dir"
+	ConfigDir      = ".hccli"
 )
 
 // Config is the configuration data that gets persisted for kubedr.
@@ -57,6 +57,15 @@ func (c *Config) GetLogLevel() string {
 // GetConfigDir returns the configuration directory
 func (c *Config) GetConfigDir() string {
 	return filepath.Dir(viper.ConfigFileUsed())
+}
+
+// IsValid returns any errors with the configuration. The return is a list of configuration problems
+func (c *Config) IsValid() []string {
+	problems := make([]string, 0, 1)
+	if c.HoneycombAPIKeyFile == "" {
+		problems = append(problems, "No HoneycombAPIKeyFile key file specified. Please set one by running:\n\thccli config set honeycombApiKeyFile <path>")
+	}
+	return problems
 }
 
 // InitViper reads in config file and ENV variables if set.
@@ -128,7 +137,7 @@ func GetConfig() *Config {
 	return cfg
 }
 
-func kubeDRHome() string {
+func binHome() string {
 	log := zapr.NewLogger(zap.L())
 	usr, err := user.Current()
 	homeDir := ""
@@ -138,7 +147,7 @@ func kubeDRHome() string {
 	} else {
 		homeDir = usr.HomeDir
 	}
-	p := filepath.Join(homeDir, ".kubepilot")
+	p := filepath.Join(homeDir, ConfigDir)
 
 	return p
 }
@@ -166,5 +175,5 @@ func (c *Config) Write(cfgFile string) error {
 }
 
 func DefaultConfigFile() string {
-	return kubeDRHome() + "/config.yaml"
+	return binHome() + "/config.yaml"
 }

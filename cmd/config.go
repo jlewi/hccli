@@ -55,6 +55,7 @@ func NewConfigSetCmd() *cobra.Command {
 				if cfgFile == "" {
 					cfgFile = config.DefaultConfigFile()
 				}
+				fmt.Printf("Writing configuration to %s\n", cfgFile)
 				return cfg.Write(cfgFile)
 			}()
 
