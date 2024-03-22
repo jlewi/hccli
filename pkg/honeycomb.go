@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/go-logr/zapr"
 	"github.com/jlewi/hccli/pkg/config"
 	"github.com/jlewi/hydros/pkg/files"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"io"
-	"net/http"
-	"strings"
 )
 
 const (
@@ -39,12 +41,23 @@ func NewHoneycombClient(config config.Config) (*HoneycombClient, error) {
 	}, nil
 }
 
-func (h *HoneycombClient) GetColumns(datasetSlug string) (string, error) {
+type HoneycombColumn struct {
+	Id          string    `json:"id,omitempty"`
+	KeyName     string    `json:"key_name,omitempty"`
+	Hidden      bool      `json:"hidden,omitempty"`
+	Description string    `json:"description,omitempty"`
+	Type        string    `json:"type,omitempty"`
+	LastWritten time.Time `json:"last_written,omitempty"`
+	CreatedAt   time.Time `json:"created_at,omitempty"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+}
+
+func (h *HoneycombClient) GetColumns(datasetSlug string) ([]HoneycombColumn, error) {
 	log := zapr.NewLogger(zap.L())
 	endpoint := fmt.Sprintf("https://api.honeycomb.io/1/columns/%s", datasetSlug)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to create request")
+		return nil, errors.Wrapf(err, "Failed to create request")
 	}
 
 	req.Header.Set(honeycombAPIKeyHeader, h.apiKey)
@@ -53,7 +66,7 @@ func (h *HoneycombClient) GetColumns(datasetSlug string) (string, error) {
 	log.Info("Fetching columns", "endpoint", endpoint)
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to send request")
+		return nil, errors.Wrapf(err, "Failed to send request")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -64,13 +77,19 @@ func (h *HoneycombClient) GetColumns(datasetSlug string) (string, error) {
 			log.Info("Request failed", "status", resp.StatusCode, "body", string(body))
 
 		}
-		return "", errors.Errorf("Request failed with status code %v; body %v", resp.StatusCode, string(body))
+		return nil, errors.Errorf("Request failed with status code %v; body %v", resp.StatusCode, string(body))
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return string(body), errors.Wrapf(err, "Failed to read response body")
+		return nil, errors.Wrapf(err, "Failed to read response body")
 	}
-	return string(body), nil
+
+	columns := make([]HoneycombColumn, 0)
+	if err := json.Unmarshal(body, &columns); err != nil {
+		return nil, errors.Wrapf(err, "Failed to deserialize response body")
+
+	}
+	return columns, nil
 }
 
 type HoneycombQuery struct {

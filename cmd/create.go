@@ -3,8 +3,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"os"
+
+	"github.com/go-logr/zapr"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 
 	"github.com/jlewi/hccli/pkg"
 	"github.com/jlewi/hccli/pkg/app"
@@ -29,6 +32,7 @@ func NewCreateQuery() *cobra.Command {
 					return err
 				}
 
+				log := zapr.NewLogger(zap.L())
 				logVersion()
 
 				if (query == "" && queryFile == "") || (query != "" && queryFile != "") {
@@ -46,6 +50,7 @@ func NewCreateQuery() *cobra.Command {
 				hcq := &pkg.HoneycombQuery{}
 
 				if err := json.Unmarshal([]byte(query), hcq); err != nil {
+					log.Error(err, "Error unmarshalling query", "query", query)
 					return errors.Wrapf(err, "Error unmarshalling query")
 				}
 

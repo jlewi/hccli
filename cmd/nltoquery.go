@@ -1,19 +1,26 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/go-logr/zapr"
 	"github.com/jlewi/hccli/pkg"
 	"github.com/jlewi/hccli/pkg/app"
 	"github.com/jlewi/hydros/pkg/util"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // NewNLToQuery creates a command to generate queries
 func NewNLToQuery() *cobra.Command {
 	var nlq string
 	var cols string
+	var dataset string
+	var output string
 	cmd := &cobra.Command{
 		Use: "nltoq",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -26,10 +33,40 @@ func NewNLToQuery() *cobra.Command {
 					return err
 				}
 
+				log := zapr.NewLogger(zap.L())
+
 				logVersion()
 
 				p := pkg.Predictor{
 					Config: app.Config,
+				}
+
+				hc, err := pkg.NewHoneycombClient(*app.Config)
+				if err != nil {
+					return err
+				}
+				if cols == "" {
+					if dataset == "" {
+						return errors.New("dataset must be specified if cols isn't specified")
+					}
+					log.Info("No columns specified; fetching columns from Honeycomb")
+					columns, err := hc.GetColumns(dataset)
+					if err != nil {
+						return err
+					}
+
+					names := make([]string, 0, len(columns))
+
+					for _, c := range columns {
+						names = append(names, c.KeyName)
+					}
+					log.Info("Fetched list of columns", "names", names)
+
+					b, err := json.Marshal(columns)
+					if err != nil {
+						return errors.Wrapf(err, "Failed to serialize columns")
+					}
+					cols = string(b)
 				}
 
 				resp, err := p.Predict(pkg.QueryInput{
@@ -41,8 +78,22 @@ func NewNLToQuery() *cobra.Command {
 				}
 				if resp.Output != nil {
 					fmt.Printf("The query is:\n%v\n", *resp.Output)
+					// Escaped query is to support copying the query inside a notebook to the command to create the
+					// query
+					// This is a bit of a hack. We replace ' with " so on the command line we can enclose the whole
+					// thing in single quotes
+					escaped := *resp.Output
+					escaped = strings.Replace(escaped, "'", "\"", -1)
+					fmt.Printf("Escaped query :\n%v\n", escaped)
 				} else {
 					fmt.Printf("No query was returned:\n%v\n", resp.Error)
+				}
+
+				if output != "" {
+					if err := os.WriteFile(output, []byte(*resp.Output), 0644); err != nil {
+						return err
+					}
+					fmt.Printf("Wrote query to %v\n", output)
 				}
 
 				return nil
@@ -57,7 +108,8 @@ func NewNLToQuery() *cobra.Command {
 
 	cmd.Flags().StringVarP(&nlq, "nlq", "", "", "Natural language query")
 	cmd.Flags().StringVarP(&cols, "cols", "", "", "Columns")
+	cmd.Flags().StringVarP(&dataset, "dataset", "", "", "Honeycomb dataset to fetch columns for. Only required if cols isn't specified")
+	cmd.Flags().StringVarP(&output, "output", "o", "", "Output file to write the query to")
 	util.IgnoreError(cmd.MarkFlagRequired("nlq"))
-	util.IgnoreError(cmd.MarkFlagRequired("cols"))
 	return cmd
 }

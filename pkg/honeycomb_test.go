@@ -2,10 +2,12 @@ package pkg
 
 import (
 	"encoding/json"
-	"github.com/jlewi/hccli/pkg/app"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/jlewi/hccli/pkg/app"
+	"github.com/jlewi/hydros/pkg/util"
 )
 
 const (
@@ -35,7 +37,7 @@ func Test_GetColumns(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error getting columns; %v", err)
 	}
-	t.Logf("Columns: %v", cols)
+	t.Logf("Columns:\n%v", util.PrettyString(cols))
 }
 
 func Test_CreateQuery(t *testing.T) {
