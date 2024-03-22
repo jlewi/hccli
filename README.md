@@ -15,3 +15,8 @@ CLI for honeycomb and observability queries
     ```bash
     hccli  config set honeycombApiKeyFile=~/.honeycomb_api_key
     ```
+   
+## Limitations
+
+Unfortunately the Honeycomb API only lets you fetch query data if your on the enterprise plan.
+See [QueryData API Docs](https://docs.honeycomb.io/api/tag/Query-Data)
