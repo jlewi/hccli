@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"os"
 
 	"github.com/jlewi/hccli/pkg"
@@ -10,10 +12,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CreateQuery creates a command to generate queries
-func CreateQuery() *cobra.Command {
-	var nlq string
-	var cols string
+// NewCreateQuery creates a command to generate queries
+func NewCreateQuery() *cobra.Command {
+	var dataset string
+	var query string
+	var queryFile string
 	cmd := &cobra.Command{
 		Use: "createquery",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -28,22 +31,35 @@ func CreateQuery() *cobra.Command {
 
 				logVersion()
 
-				p := pkg.Predictor{
-					Config: app.Config,
+				if (query == "" && queryFile == "") || (query != "" && queryFile != "") {
+					return errors.New("Exactly one of --query and --query-file must be specified")
 				}
 
-				resp, err := p.Predict(pkg.QueryInput{
-					NLQ:  nlq,
-					COLS: cols,
-				})
+				if queryFile != "" {
+					data, err := os.ReadFile(queryFile)
+					if err != nil {
+						return errors.Wrapf(err, "Error reading query file %v", queryFile)
+					}
+					query = string(data)
+				}
+
+				hcq := &pkg.HoneycombQuery{}
+
+				if err := json.Unmarshal([]byte(query), hcq); err != nil {
+					return errors.Wrapf(err, "Error unmarshalling query")
+				}
+
+				hc, err := pkg.NewHoneycombClient(*app.Config)
 				if err != nil {
 					return err
 				}
-				if resp.Output != nil {
-					fmt.Printf("The query is:\n%v\n", *resp.Output)
-				} else {
-					fmt.Printf("No query was returned:\n%v\n", resp.Error)
+
+				qid, err := hc.CreateQuery(dataset, *hcq)
+				if err != nil {
+					return err
 				}
+
+				fmt.Printf("Created query :\n%v\n", qid)
 
 				return nil
 			}()
@@ -55,7 +71,10 @@ func CreateQuery() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&nlq, "query", "", "", "The honeycomb query")
-	util.IgnoreError(cmd.MarkFlagRequired("query"))
+	cmd.Flags().StringVarP(&query, "query", "", "", "The honeycomb query")
+	cmd.Flags().StringVarP(&queryFile, "query-file", "", "", "A file containing the honeycomb query")
+	cmd.Flags().StringVarP(&dataset, "dataset", "", "", "The dataset slug to create the query in")
+
+	util.IgnoreError(cmd.MarkFlagRequired("dataset"))
 	return cmd
 }
