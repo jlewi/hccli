@@ -1,0 +1,26 @@
+{
+  "time_range": 604800,
+  "granularity": 0,
+  "breakdowns": [
+    "name"
+  ],
+  "calculations": [
+    {
+      "op": "COUNT"
+    }
+  ],
+  "filters": [
+    {
+      "column": "trace.parent_id",
+      "op": "does-not-exist"
+    }
+  ],
+  "filter_combination": "AND",
+  "orders": [
+    {
+      "op": "COUNT",
+      "order": "descending"
+    }
+  ],
+  "limit": 1000
+}

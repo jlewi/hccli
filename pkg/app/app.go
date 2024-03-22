@@ -50,8 +50,8 @@ func (a *App) SetupLogging() error {
 		return errors.New("Config is nil; call LoadConfig first")
 	}
 	cfg := a.Config
-	// Use a json configuration
-	c := zap.NewProductionConfig()
+	// Use a non-json configuration configuration
+	c := zap.NewDevelopmentConfig()
 
 	// Use the keys used by cloud logging
 	// https://cloud.google.com/logging/docs/structured-logging
