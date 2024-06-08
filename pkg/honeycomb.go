@@ -102,8 +102,7 @@ type HoneycombQuery struct {
 	Filters []struct {
 		Op     string      `json:"op,omitempty"`
 		Column interface{} `json:"column,omitempty"`
-		Value  *struct {
-		} `json:"value,omitempty"`
+		Value  string      `json:"value,omitempty"`
 	} `json:"filters"`
 	FilterCombination string `json:"filter_combination,omitempty"`
 	Granularity       int    `json:"granularity,omitempty"`
