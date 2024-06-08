@@ -88,7 +88,7 @@ func NewNLToQuery() *cobra.Command {
 					return err
 				}
 				if queryStr != "" {
-					fmt.Printf("The query is:\n%v\n", *queryStr)
+					fmt.Printf("The query is:\n%v\n", queryStr)
 					// Escaped query is to support copying the query inside a notebook to the command to create the
 					// query
 					// This is a bit of a hack. We replace ' with " so on the command line we can enclose the whole
@@ -101,7 +101,7 @@ func NewNLToQuery() *cobra.Command {
 				}
 
 				if output != "" {
-					if err := os.WriteFile(output, []byte(*queryStr), 0644); err != nil {
+					if err := os.WriteFile(output, []byte(queryStr), 0644); err != nil {
 						return err
 					}
 					fmt.Printf("Wrote query to %v\n", output)

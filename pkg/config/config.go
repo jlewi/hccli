@@ -39,7 +39,7 @@ type Config struct {
 	AIEndpoint string `json:"aiEndpoint" yaml:"aiEndpoint"`
 
 	// Replicate is the configuration when using a model deployed on replicate
-	Replicate ReplicateConfig `json:"replicate" yaml:"replicate"`
+	Replicate *ReplicateConfig `json:"replicate" yaml:"replicate"`
 
 	// HoneycombAPIKeyFile contains the URI of the APIKey for HoneyComb
 	HoneycombAPIKeyFile string `json:"honeycombAPIKeyFile" yaml:"honeycombAPIKeyFile"`
