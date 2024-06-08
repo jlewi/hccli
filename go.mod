@@ -6,6 +6,7 @@ require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/google/go-cmp v0.6.0
 	github.com/jlewi/hydros v0.0.5
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/replicate/replicate-go v0.18.1
 	github.com/spf13/cobra v1.8.0

@@ -22,6 +22,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(NewConfigCmd())
 	rootCmd.AddCommand(NewNLToQuery())
 	rootCmd.AddCommand(NewCreateQuery())
+	rootCmd.AddCommand(NewQueryToURL())
 	rootCmd.AddCommand(NewVersionCmd("hccli", os.Stdout))
 	return rootCmd
 }

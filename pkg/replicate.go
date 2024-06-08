@@ -2,13 +2,14 @@ package pkg
 
 import (
 	"context"
+	"strings"
+
 	"github.com/go-logr/zapr"
 	"github.com/jlewi/hccli/pkg/config"
 	"github.com/jlewi/hydros/pkg/files"
 	"github.com/pkg/errors"
 	"github.com/replicate/replicate-go"
 	"go.uber.org/zap"
-	"strings"
 )
 
 // ReplicateClient is a client for the model when deployed on Replicate (as opposed to K8s)

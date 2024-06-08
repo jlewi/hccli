@@ -2,10 +2,11 @@ package pkg
 
 import (
 	"encoding/json"
-	"github.com/jlewi/hccli/pkg/config"
-	"go.uber.org/zap"
 	"os"
 	"testing"
+
+	"github.com/jlewi/hccli/pkg/config"
+	"go.uber.org/zap"
 )
 
 func Test_Replicate(t *testing.T) {
