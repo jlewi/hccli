@@ -13,7 +13,9 @@ func Test_Replicate(t *testing.T) {
 		t.Skipf("Test is skipped in GitHub actions")
 	}
 
-	config.InitViper(nil)
+	if err := config.InitViper(nil); err != nil {
+		t.Fatalf("Failed to initialize viper: %v", err)
+	}
 	cfg := config.GetConfig()
 
 	log, err := zap.NewDevelopment()
