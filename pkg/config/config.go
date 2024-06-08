@@ -38,10 +38,21 @@ type Config struct {
 	// AIEndpoint is the endpoint of the model that turns natural language into queries
 	AIEndpoint string `json:"aiEndpoint" yaml:"aiEndpoint"`
 
+	// Replicate is the configuration when using a model deployed on replicate
+	Replicate *ReplicateConfig `json:"replicate" yaml:"replicate"`
+
 	// HoneycombAPIKeyFile contains the URI of the APIKey for HoneyComb
 	HoneycombAPIKeyFile string `json:"honeycombAPIKeyFile" yaml:"honeycombAPIKeyFile"`
 
 	Logging Logging `json:"logging" yaml:"logging"`
+}
+
+type ReplicateConfig struct {
+	// APITokenFile is the file containing our APIToken
+	APITokenFile string `json:"apiTokenFile" yaml:"apiTokenFile"`
+	// Model identifier.
+	// Should be owner/name or owner/name:version
+	Model string `json:"model" yaml:"model"`
 }
 
 type Logging struct {

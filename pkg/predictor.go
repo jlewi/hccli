@@ -14,7 +14,12 @@ import (
 	"go.uber.org/zap"
 )
 
-// Query represents a query.
+// Translator translates a natural language query to a honeycomb query.
+type Translator interface {
+	Translate(nlq QueryInput) (string, error)
+}
+
+// Query represents a query for the model; not a honeycomb query.
 type Query struct {
 	Input               *QueryInput  `json:"input,omitempty"`
 	Output              *string      `json:"output,omitempty"`
@@ -91,4 +96,12 @@ func (p *Predictor) Predict(inQuery QueryInput) (*Query, error) {
 		return nil, errors.Wrapf(err, "Failed to deserialize response body")
 	}
 	return outQuery, nil
+}
+
+func (p *Predictor) Translate(inQuery QueryInput) (string, error) {
+	query, err := p.Predict(inQuery)
+	if err != nil {
+		return "", err
+	}
+	return *query.Output, err
 }

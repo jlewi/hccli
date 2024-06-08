@@ -37,8 +37,19 @@ func NewNLToQuery() *cobra.Command {
 
 				logVersion()
 
-				p := pkg.Predictor{
-					Config: app.Config,
+				var translator pkg.Translator
+				if app.Config.Replicate != nil {
+					log.Info("Using Replicate translator")
+					rc, err := pkg.NewReplicateClient(*app.Config)
+					if err != nil {
+						return err
+					}
+					translator = rc
+				} else {
+					log.Info("Using model on K8s")
+					translator = &pkg.Predictor{
+						Config: app.Config,
+					}
 				}
 
 				hc, err := pkg.NewHoneycombClient(*app.Config)
@@ -69,28 +80,28 @@ func NewNLToQuery() *cobra.Command {
 					cols = string(b)
 				}
 
-				resp, err := p.Predict(pkg.QueryInput{
+				queryStr, err := translator.Translate(pkg.QueryInput{
 					NLQ:  nlq,
 					COLS: cols,
 				})
 				if err != nil {
 					return err
 				}
-				if resp.Output != nil {
-					fmt.Printf("The query is:\n%v\n", *resp.Output)
+				if queryStr != "" {
+					fmt.Printf("The query is:\n%v\n", queryStr)
 					// Escaped query is to support copying the query inside a notebook to the command to create the
 					// query
 					// This is a bit of a hack. We replace ' with " so on the command line we can enclose the whole
 					// thing in single quotes
-					escaped := *resp.Output
+					escaped := queryStr
 					escaped = strings.Replace(escaped, "'", "\"", -1)
 					fmt.Printf("Escaped query :\n%v\n", escaped)
 				} else {
-					fmt.Printf("No query was returned:\n%v\n", resp.Error)
+					fmt.Printf("No query was returned:\n%v\n", err)
 				}
 
 				if output != "" {
-					if err := os.WriteFile(output, []byte(*resp.Output), 0644); err != nil {
+					if err := os.WriteFile(output, []byte(queryStr), 0644); err != nil {
 						return err
 					}
 					fmt.Printf("Wrote query to %v\n", output)
