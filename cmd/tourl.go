@@ -3,14 +3,16 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/go-logr/zapr"
 	"github.com/jlewi/hccli/pkg"
 	"github.com/jlewi/hccli/pkg/app"
 	"github.com/jlewi/hydros/pkg/util"
+	"github.com/pkg/browser"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"os"
 )
 
 // NewQueryToURL creates a command to turn queries into URLs
@@ -19,6 +21,7 @@ func NewQueryToURL() *cobra.Command {
 	var query string
 	var queryFile string
 	var baseURL string
+	var open bool
 	cmd := &cobra.Command{
 		Use: "querytourl",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -58,7 +61,11 @@ func NewQueryToURL() *cobra.Command {
 					return err
 				}
 				fmt.Printf("Honeycomb URL:\n%v\n", hc)
-
+				if open {
+					if err := browser.OpenURL(hc); err != nil {
+						return errors.Wrapf(err, "Error opening URL %v", hc)
+					}
+				}
 				return nil
 			}()
 
@@ -73,6 +80,7 @@ func NewQueryToURL() *cobra.Command {
 	cmd.Flags().StringVarP(&queryFile, "query-file", "", "", "A file containing the honeycomb query")
 	cmd.Flags().StringVarP(&dataset, "dataset", "", "", "The dataset slug to create the query in")
 	cmd.Flags().StringVarP(&baseURL, "base-url", "", "", "The base URL for your honeycomb URLs. It should be something like https://ui.honeycomb.io/${ORG}/environments/${ENVIRONMENT}")
+	cmd.Flags().BoolVarP(&open, "open", "", false, "Open the URL in a browser")
 	util.IgnoreError(cmd.MarkFlagRequired("dataset"))
 	return cmd
 }
