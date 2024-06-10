@@ -22,6 +22,8 @@ func NewQueryToURL() *cobra.Command {
 	var queryFile string
 	var baseURL string
 	var open bool
+	var outFile string
+	var chromePort int
 	cmd := &cobra.Command{
 		Use: "querytourl",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -66,6 +68,11 @@ func NewQueryToURL() *cobra.Command {
 						return errors.Wrapf(err, "Error opening URL %v", hc)
 					}
 				}
+				if outFile != "" {
+					if err := pkg.SaveHoneycombGraph(hc, outFile, chromePort); err != nil {
+						return err
+					}
+				}
 				return nil
 			}()
 
@@ -79,6 +86,8 @@ func NewQueryToURL() *cobra.Command {
 	cmd.Flags().StringVarP(&query, "query", "", "", "The honeycomb query")
 	cmd.Flags().StringVarP(&queryFile, "query-file", "", "", "A file containing the honeycomb query")
 	cmd.Flags().StringVarP(&dataset, "dataset", "", "", "The dataset slug to create the query in")
+	cmd.Flags().StringVarP(&outFile, "out-file", "", "", "Save a PNG of the page to this file")
+	cmd.Flags().IntVarP(&chromePort, "port", "", 9222, "Port chrome developer tools is running on. This only matters if you are saving a PNG of the page.")
 	cmd.Flags().StringVarP(&baseURL, "base-url", "", "", "The base URL for your honeycomb URLs. It should be something like https://ui.honeycomb.io/${ORG}/environments/${ENVIRONMENT}")
 	cmd.Flags().BoolVarP(&open, "open", "", false, "Open the URL in a browser")
 	util.IgnoreError(cmd.MarkFlagRequired("dataset"))
