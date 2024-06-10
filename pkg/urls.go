@@ -59,12 +59,9 @@ func SaveHoneycombGraph(url string, outFile string, port int) error {
 		return errors.Wrapf(err, "Failed to navigate to the page and wait for it to be ready")
 	}
 
-	// We need a timeout because otherwise we might wait for ever if the selector doesn't match
-	ctxWithTimeout, _ := context.WithTimeout(ctx, 7*time.Second)
-
 	// N.B. We don't want to be pass a timeout to the first Run call because on the first Run call a browser is
 	// created and the timeout would end up cancelling the browser and then the subsequent Run calls would fail.
-	if err := chromedp.Run(ctx, waitForEither(ctxWithTimeout, svgSelector, divSelector)); err != nil {
+	if err := chromedp.Run(ctx, waitForEither(svgSelector, divSelector, 7*time.Second)); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			// If there was a timeout then the selector is probably wrong so try to snapshot it any way.
 			log.Info("Timed out waiting for page to be ready", "url", url, "divSelector", divSelector, "svgSelector", svgSelector)
@@ -87,7 +84,7 @@ func SaveHoneycombGraph(url string, outFile string, port int) error {
 }
 
 // waitForEither waits for either one of the selectors to be visible
-func waitForEither(ctx context.Context, selector1, selector2 string) chromedp.Tasks {
+func waitForEither(selector1, selector2 string, timeout time.Duration) chromedp.Tasks {
 	// TODO(jeremy): This is chatGPT generated code. Does it make sense to wrap it in ChromeDPTasks?
 	return chromedp.Tasks{
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -107,6 +104,9 @@ func waitForEither(ctx context.Context, selector1, selector2 string) chromedp.Ta
 			case err := <-done:
 				cancel() // Cancel the other goroutine
 				return err
+			case <-time.After(timeout):
+				cancel() // Cancel the other goroutine
+				return context.DeadlineExceeded
 			case <-ctx.Done():
 				return ctx.Err()
 			}
