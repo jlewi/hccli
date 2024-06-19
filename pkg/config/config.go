@@ -74,9 +74,7 @@ func (c *Config) GetConfigDir() string {
 // IsValid returns any errors with the configuration. The return is a list of configuration problems
 func (c *Config) IsValid() []string {
 	problems := make([]string, 0, 1)
-	if c.HoneycombAPIKeyFile == "" {
-		problems = append(problems, "No HoneycombAPIKeyFile key file specified. Please set one by running:\n\thccli config set honeycombApiKeyFile <path>")
-	}
+	// N.B. We no longer check for a HoneycombAPIKeyFile because it isn't needed if using the URL functionality.
 	return problems
 }
 
