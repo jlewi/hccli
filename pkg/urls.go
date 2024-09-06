@@ -17,6 +17,9 @@ import (
 // It uses Honeycomb's query parameter and template links feature
 // https://docs.honeycomb.io/investigate/collaborate/share-query/
 func QueryToURL(query HoneycombQuery, baseURL string, dataset string) (string, error) {
+	if baseURL == "" {
+		return "", errors.New("baseURL must be specified")
+	}
 	b, err := json.Marshal(query)
 	if err != nil {
 		return "", errors.Wrapf(err, "Failed to serialize query to JSON")
