@@ -21,9 +21,10 @@ import (
 // to the Configuration struct which is what we pass around in the application.
 
 const (
-	ConfigFlagName = "config"
-	LevelFlagName  = "level"
-	ConfigDir      = ".hccli"
+	ConfigFlagName  = "config"
+	LevelFlagName   = "level"
+	ConfigDir       = ".hccli"
+	BaseURLFlagName = "base-url"
 )
 
 // Config is the configuration data that gets persisted for kubedr.
@@ -45,6 +46,10 @@ type Config struct {
 	HoneycombAPIKeyFile string `json:"honeycombAPIKeyFile" yaml:"honeycombAPIKeyFile"`
 
 	Logging Logging `json:"logging" yaml:"logging"`
+
+	// BaseURL is the base URL in the Honeycomb UI for your environment.
+	// This is used to construct URLs to Honeycomb queries.
+	BaseURL string `json:"baseURL" yaml:"baseURL"`
 }
 
 type ReplicateConfig struct {

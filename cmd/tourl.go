@@ -8,6 +8,7 @@ import (
 	"github.com/go-logr/zapr"
 	"github.com/jlewi/hccli/pkg"
 	"github.com/jlewi/hccli/pkg/app"
+	"github.com/jlewi/hccli/pkg/config"
 	"github.com/jlewi/hydros/pkg/util"
 	"github.com/pkg/browser"
 	"github.com/pkg/errors"
@@ -58,7 +59,10 @@ func NewQueryToURL() *cobra.Command {
 					return errors.Wrapf(err, "Error unmarshalling query")
 				}
 
-				hc, err := pkg.QueryToURL(*hcq, baseURL, dataset)
+				if app.Config.BaseURL == "" {
+					return errors.New("baseURL must be specified either in config.yaml or via the --base-url flag")
+				}
+				hc, err := pkg.QueryToURL(*hcq, app.Config.BaseURL, dataset)
 				if err != nil {
 					return err
 				}
@@ -88,7 +92,7 @@ func NewQueryToURL() *cobra.Command {
 	cmd.Flags().StringVarP(&dataset, "dataset", "", "", "The dataset slug to create the query in")
 	cmd.Flags().StringVarP(&outFile, "out-file", "", "", "Save a PNG of the page to this file")
 	cmd.Flags().IntVarP(&chromePort, "port", "", 9222, "Port chrome developer tools is running on. This only matters if you are saving a PNG of the page.")
-	cmd.Flags().StringVarP(&baseURL, "base-url", "", "", "The base URL for your honeycomb URLs. It should be something like https://ui.honeycomb.io/${ORG}/environments/${ENVIRONMENT}")
+	cmd.Flags().StringVarP(&baseURL, config.BaseURLFlagName, "", "", "The base URL for your honeycomb URLs. It should be something like https://ui.honeycomb.io/${ORG}/environments/${ENVIRONMENT}")
 	cmd.Flags().BoolVarP(&open, "open", "", false, "Open the URL in a browser")
 	util.IgnoreError(cmd.MarkFlagRequired("dataset"))
 	return cmd
